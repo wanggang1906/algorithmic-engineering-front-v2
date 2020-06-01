@@ -118,20 +118,23 @@ function CRUD(options) {
     delSuccessNotify() {
       crud.notify(crud.msg.del, CRUD.NOTIFICATION_TYPE.SUCCESS)
     },
-    // 搜索
+    // 通用搜索按钮
     toQuery() {
       crud.page.page = 1
       crud.refresh()
     },
-    // 刷新
+    // 通用刷新按钮
     refresh() {
+      // vm钩子不存在
       if (!callVmHook(crud, CRUD.HOOK.beforeRefresh)) {
         return
       }
       return new Promise((resolve, reject) => {
         crud.loading = true
         // 请求数据
+        // 获取参数成功，执行then后的
         initData(crud.url, crud.getQueryParams()).then(data => {
+          // 表格数据
           const table = crud.getTable()
           if (table.lazy) { // 懒加载子节点数据，清掉已加载的数据
             table.store.states.treeData = {}
@@ -139,6 +142,7 @@ function CRUD(options) {
           }
           crud.page.total = data.totalElements
           crud.data = data.content
+          // 重置数据状态
           crud.resetDataStatus()
           // time 毫秒后显示表格
           setTimeout(() => {
@@ -337,7 +341,7 @@ function CRUD(options) {
       })
     },
     /**
-     * 获取查询参数
+     * 获取查询参数，以对象形式返回
      */
     getQueryParams: function() {
       // 清除参数无值的情况

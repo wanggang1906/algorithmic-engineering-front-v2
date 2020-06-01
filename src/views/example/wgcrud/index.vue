@@ -2,6 +2,23 @@
   <div class="app-container">
     <!--工具栏-->
     <div class="head-container">
+      <div v-if="crud.props.searchToggle">
+        <!-- 搜索 -->
+        <el-input v-model="query.value" clearable placeholder="输入搜索内容" style="width: 200px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
+        <el-date-picker
+          v-model="query.deptId"
+          :default-time="['00:00:00','23:59:59']"
+          type="daterange"
+          range-separator=":"
+          size="small"
+          class="date-item"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          start-placeholder="deptIdStart"
+          end-placeholder="deptIdEnd"
+        />
+        <!-- 搜索与重置 -->
+        <rrOperation :crud="crud" />
+      </div>
       <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
       <crudOperation :permission="permission" />
       <!--表单组件-->
@@ -40,42 +57,46 @@
 </template>
 
 <script>
-  import crudTestIdName from '@/api/example/wgcrud/testIdName'
-  import CRUD, { presenter, header, form, crud } from '@crud/crud'
-  import rrOperation from '@crud/RR.operation'
-  import crudOperation from '@crud/CRUD.operation'
-  import udOperation from '@crud/UD.operation'
-  import pagination from '@crud/Pagination'
+import crudTestIdName from '@/api/example/wgcrud/testIdName'
+import CRUD, { presenter, header, form, crud } from '@crud/crud'
+import rrOperation from '@crud/RR.operation'
+import crudOperation from '@crud/CRUD.operation'
+import udOperation from '@crud/UD.operation'
+import pagination from '@crud/Pagination'
 
-  const defaultForm = { id: null, name: null }
-  export default {
-    name: 'Wgcrud',
-    components: { pagination, crudOperation, rrOperation, udOperation },
-    mixins: [presenter(), header(), form(defaultForm), crud()],
-    cruds() {
-      return CRUD({ title: 'wgcrud', url: 'api/testIdName', sort: 'id,desc', crudMethod: { ...crudTestIdName }})
-    },
-    data() {
-      return {
-        permission: {
-          add: ['admin', 'testIdName:add'],
-          edit: ['admin', 'testIdName:edit'],
-          del: ['admin', 'testIdName:del']
-        },
-        rules: {
-          id: [
-            { required: true, message: '不能为空', trigger: 'blur' }
-          ]
-        }    }
-    },
-    methods: {
-      // 钩子：在获取表格数据之前执行，false 则代表不获取数据
-      [CRUD.HOOK.beforeRefresh]() {
-        return true
+const defaultForm = { id: null, name: null }
+export default {
+  name: 'Wgcrud',
+  components: { pagination, crudOperation, rrOperation, udOperation },
+  mixins: [presenter(), header(), form(defaultForm), crud()],
+  cruds() {
+    return CRUD({ title: 'wgcrud', url: 'api/testIdName', sort: 'id,desc', crudMethod: { ...crudTestIdName }})
+  },
+  data() {
+    return {
+      permission: {
+        add: ['admin', 'testIdName:add'],
+        edit: ['admin', 'testIdName:edit'],
+        del: ['admin', 'testIdName:del']
+      },
+      rules: {
+        id: [
+          { required: true, message: '不能为空', trigger: 'blur' }
+        ]
+      }}
+  },
+  methods: {
+    // 钩子：在获取表格数据之前执行，false 则代表不获取数据
+    [CRUD.HOOK.beforeRefresh]() {
+      const query = this.query
+      if (query.type && query.value) {
+        this.crud.params[query.type] = query.value
       }
+      return true
     }
-
   }
+
+}
 </script>
 
 <style scoped>
